@@ -84,14 +84,16 @@ class MovieManager:
             print("Movie wasn't found.")
 
     # Adding a movie
-    def add_movie(self, title, genre, year):
+    def add_movie(self, title, genre, year, rating=None):
         try:
             year = int(year)
         except ValueError:
             print("Year has to be a number.")
             return
 
-        rating = self.fetch_movie_from_api(title)
+        if rating is None:
+            movie_data = self.fetch_movie_from_api(title)
+            rating = movie_data["rating"] if movie_data else "N/A"
 
         movie = {
             "title": title,
