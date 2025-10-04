@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from movie_manager.main import MovieManager, MovieNotFoundError
+from movie_manager.manager import MovieManager, MovieNotFoundError
 
 
 class TestMovie(unittest.TestCase):
