@@ -16,7 +16,7 @@ class MovieManager:
                 reader = csv.DictReader(file)
                 self.movies = list(reader)
         except FileNotFoundError:
-            print("⚠File not found. A new one will be created automatically.")
+            print("File not found. A new one will be created automatically.")
             print("Tip: If you have a backup of your movies.csv, copy it into this folder.")
             self.movies = []
         except PermissionError:
