@@ -16,10 +16,16 @@ class MovieManager:
                 reader = csv.DictReader(file)
                 self.movies = list(reader)
         except FileNotFoundError:
-            print("File doesn't exist, creating a new one.")
+            print("File not found. A new one will be created automatically.")
+            print("Tip: If you have a backup of your movies.csv, copy it into this folder.")
+            self.movies = []
+        except PermissionError:
+            print("Access denied when trying to read the file.")
+            print("Tip: Make sure the file isn't opened by another program (like Excel).")
             self.movies = []
         except Exception as e:
-            print(f"Reading from CSV failed: {e}")
+            print(f"Unexpected error while reading from CSV: {e}")
+            print("Tip: Check if the file is corrupted or incorrectly formatted as CSV.")
 
     # Saving CSV
     def save_movies(self):
@@ -29,10 +35,14 @@ class MovieManager:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(self.movies)
+        except PermissionError:
+            print("Could not save the file – access denied.")
+            print("Tip: Make sure the file isn't currently open in another program.")
         except Exception as e:
             print(f"Saving to the file failed: {e}")
+            print("Tip: Check your disk space or try saving to a different folder.")
 
-    # Getting rating from OMBd
+    # Getting rating from OMDb
     def fetch_movie_from_api(self, title):
         try:
             url = f"https://www.omdbapi.com/?t={title}&apikey={self.api_key}&plot=short"
@@ -45,15 +55,25 @@ class MovieManager:
                     "title": data.get("Title", "Unknown"),
                     "genre": data.get("Genre", "Unknown"),
                     "year": data.get("Year", "Unknown"),
-                    "rating": data.get("omdbRating", "N/A"),
+                    "rating": data.get("omdbRating", "N/A"),  # fixed key typo
                     "plot": data.get("Plot", "No description available.")
                 }
             else:
-                print(f"'{title}' wasnt found on OMDb.")
+                print(f"'{title}' was not found on OMDb.")
+                print("Tip: Try typing the exact movie title, for example 'The Matrix' instead of 'Matrix'.")
                 return None
 
+        except requests.exceptions.ConnectionError:
+            print("Connection to OMDb API failed.")
+            print("Tip: Check your internet connection.")
+            return None
+        except requests.exceptions.Timeout:
+            print("The request to OMDb API timed out.")
+            print("Tip: Try again in a few seconds.")
+            return None
         except requests.exceptions.RequestException as e:
             print(f"Communication with API failed: {e}")
+            print("Tip: Verify that your API key is valid at https://www.omdbapi.com/apikey.aspx.")
             return None
 
     # Searching on OMDb
@@ -61,7 +81,7 @@ class MovieManager:
         """Will search movie and ask if you want to add the movie to the file."""
         movie = self.fetch_movie_from_api(title)
         if movie:
-            print("\nMovie found:")
+            print("\n🎬 Movie found:")
             print(f"  Title: {movie['title']}")
             print(f"  Year: {movie['year']}")
             print(f"  Genre: {movie['genre']}")
@@ -81,14 +101,15 @@ class MovieManager:
             else:
                 print("Movie wasn't saved.")
         else:
-            print("Movie wasn't found.")
+            print("Movie wasn't found on OMDb.")
 
     # Adding a movie
     def add_movie(self, title, genre, year, rating=None):
         try:
             year = int(year)
         except ValueError:
-            print("Year has to be a number.")
+            print("Year must be a number (e.g., 1999).")
+            print("Tip: Do not include spaces or letters, only digits.")
             return
 
         if rating is None:
@@ -102,15 +123,16 @@ class MovieManager:
             "rating": rating
         }
         self.movies.append(movie)
-        print(f"'{title}' added to the list.")
+        print(f"'{title}' added to the list (rating: {rating}).")
         self.save_movies()
 
     # Show all movies in file
     def show_movies(self):
         if not self.movies:
-            print("No movies are saved.")
+            print("No movies are saved yet.")
+            print("Tip: Add one using option 1 in the main menu.")
             return
-        print("\nSaved movies:")
+        print("\n🎞️ Saved movies:")
         for movie in self.movies:
             print(f"- {movie['title']} ({movie['year']}) – {movie['genre']} – OMDb: {movie['rating']}")
 
@@ -121,26 +143,26 @@ class MovieManager:
             if keyword.lower() in str(m[field]).lower()
         ]
         if results:
-            print(f"\nFound movies '{keyword}':")
+            print(f"\nFound movies containing '{keyword}':")
             for movie in results:
                 print(f"- {movie['title']} ({movie['year']}) – {movie['genre']} – OMDb: {movie['rating']}")
         else:
-            print("No movies found.")
+            print("No matching movies found.")
+            print("Tip: Try a different keyword or check your spelling.")
 
 
 if __name__ == "__main__":
     manager = MovieManager(api_key="d8ec2719")
 
-
     while True:
         print("\nMovie Manager:")
         print("1. Add movie")
         print("2. Show all movies")
-        print("3. Search movies with title")
-        print("4. Search movies with genre")
-        print("5. Search movies with rating")
+        print("3. Search movies by title")
+        print("4. Search movies by genre")
+        print("5. Search movies by rating")
         print("6. Search movies on OMDb")
-        print("7. End")
+        print("7. Exit")
 
         choice = input("Choose action: ")
 
@@ -166,12 +188,14 @@ if __name__ == "__main__":
             manager.search_movies(keyword, field="rating")
 
         elif choice == "6":
-            title = input("Enter movie title: ")
+            title = input("Enter movie title to search on OMDb: ")
             manager.search_online(title)
 
         elif choice == "7":
-            print("End of the program. Bye.")
+            print("Exiting Movie Manager. See you next time!")
             break
 
         else:
-            print("Wrong choice, try again please.")
+            print("Invalid choice.")
+            print("Tip: Please choose a number between 1 and 7.")
+
