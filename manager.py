@@ -99,9 +99,9 @@ class MovieManager:
                 self.save_movies()
                 print(f"'{movie['title']}' was added to the file.")
             else:
-                print("Movie wasn't saved.")
+                print("Movie wasnt saved.")
         else:
-            print("Movie wasn't found on OMDb.")
+            print("Movie wasnt found on OMDb.")
 
     # Adding a movie
     def add_movie(self, title, genre, year, rating=None):
@@ -147,7 +147,7 @@ class MovieManager:
             for movie in results:
                 print(f"- {movie['title']} ({movie['year']}) – {movie['genre']} – OMDb: {movie['rating']}")
         else:
-            print("⚠No matching movies found.")
+            print("No matching movies found.")
             print("Tip: Try a different keyword or check your spelling.")
 
 
