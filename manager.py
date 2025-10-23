@@ -81,7 +81,7 @@ class MovieManager:
         """Will search movie and ask if you want to add the movie to the file."""
         movie = self.fetch_movie_from_api(title)
         if movie:
-            print("\n🎬 Movie found:")
+            print("\nMovie found:")
             print(f"  Title: {movie['title']}")
             print(f"  Year: {movie['year']}")
             print(f"  Genre: {movie['genre']}")
