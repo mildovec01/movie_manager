@@ -2,7 +2,7 @@ import unittest
 import os
 import csv
 from unittest.mock import patch, MagicMock
-from movie_manager.manager import MovieManager  # 👈 správný import
+from movie_manager.manager import MovieManager
 
 
 class TestMovieManager(unittest.TestCase):
@@ -16,26 +16,25 @@ class TestMovieManager(unittest.TestCase):
         if os.path.exists(self.test_file):
             os.remove(self.test_file)
 
-    # --- test ručního přidání filmu ---
+
     def test_add_movie_manual(self):
         self.manager.add_movie("Inception", "Sci-Fi", "2010", "8.8")
         self.assertEqual(len(self.manager.movies), 1)
         self.assertEqual(self.manager.movies[0]["title"], "Inception")
 
-        # kontrola, že se CSV uložilo
+
         with open(self.test_file, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             rows = list(reader)
             self.assertEqual(rows[0]["title"], "Inception")
 
-    # --- test načtení prázdného souboru ---
     def test_load_empty_file(self):
         with open(self.test_file, "w", encoding="utf-8") as f:
             f.write("")
         self.manager.load_movies()
         self.assertEqual(self.manager.movies, [])
 
-    # --- test komunikace s API (mock) ---
+  
     @patch.object(MovieManager, "fetch_movie_from_api")
     def test_fetch_movie_from_api(self, mock_fetch):
         mock_fetch.return_value = {
@@ -50,7 +49,7 @@ class TestMovieManager(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result["rating"], "8.6")
 
-    # --- test vyhledávání v CSV ---
+    
     def test_search_movies(self):
         self.manager.add_movie("Inception", "Sci-Fi", "2010", "8.8")
         self.manager.add_movie("Matrix", "Action", "1999", "8.7")
@@ -58,7 +57,7 @@ class TestMovieManager(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["title"], "Inception")
 
-    # --- test online vyhledání s potvrzením uložit ---
+  
     @patch("builtins.input", return_value="y")
     @patch("movie_manager.manager.MovieManager.fetch_movie_from_api")
     def test_search_online_add_to_csv(self, mock_fetch, mock_input):
@@ -73,7 +72,6 @@ class TestMovieManager(unittest.TestCase):
         self.manager.search_online("Dune")
         self.assertTrue(any(m["title"] == "Dune" for m in self.manager.movies))
 
-    # --- test online vyhledání s odmítnutím uložit ---
     @patch("builtins.input", return_value="n")
     @patch("movie_manager.manager.MovieManager.fetch_movie_from_api")
     def test_search_online_not_saved(self, mock_fetch, mock_input):
